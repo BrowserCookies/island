@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Platform-neutral logic (models, config, layout math, script plumbing).
+       Kept free of WPF/Win32 so it can be unit-tested on any OS. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Island.Core</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <!-- 9.x on net8 for AllowOutOfOrderMetadataProperties, so hand-edited JSON
+         can put the "type" discriminator anywhere inside an action object. -->
+    <PackageReference Include="System.Text.Json" Version="9.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Island.Tests" />
+  </ItemGroup>
+</Project>
