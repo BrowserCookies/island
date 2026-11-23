@@ -99,6 +99,8 @@ public sealed class ButtonValidator
         var p = _expand(path.Trim().Trim('"'));
         // Bare names like "notepad" or "code" are resolved via PATH / App Paths at launch time.
         if (allowBareName && !p.Contains('\\') && !p.Contains('/')) return;
+        // Shell namespace paths (e.g. shell:AppsFolder\<AppUserModelID> for Store apps) aren't files.
+        if (allowBareName && p.StartsWith("shell:", StringComparison.OrdinalIgnoreCase)) return;
         if (!_fileExists(p) && !_dirExists(p)) errors.Add($"{what} not found: {path}");
     }
 

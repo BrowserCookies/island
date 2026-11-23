@@ -16,6 +16,11 @@ public class ConfigSerializationTests
         var fav = cfg.Buttons[0];
         Assert.IsType<GroupAction>(fav.Action);
         Assert.Equal(new[] { "File Explorer", "Notepad", "Calculator" }, fav.Children!.Select(c => c.Label));
+        // System32\calc.exe is only a stub whose icon is a grey/white placeholder; show the
+        // Calculator app's own icon from the shell's Apps folder instead.
+        var calc = fav.Children![2];
+        Assert.Equal(IconKind.AppIcon, calc.Icon.Kind);
+        Assert.StartsWith(@"shell:AppsFolder\Microsoft.WindowsCalculator_", calc.Icon.Value);
         Assert.IsType<ClaudeCodeHereAction>(cfg.Buttons[1].Action);
         Assert.Equal(ScreenshotMode.Snip, Assert.IsType<ScreenshotAction>(cfg.Buttons[2].Action).Mode);
         Assert.Null(Assert.IsType<OpenUrlAction>(cfg.Buttons[3].Action).Url);

@@ -28,6 +28,7 @@ public sealed class AppServices
     public required IIslandHost Host { get; set; }
     public ActionRunner Actions { get; set; } = null!;
     public HotkeyService? Hotkeys { get; set; }
+    public Island.Search.SpotifyService? Spotify { get; set; }
 
     public GeneralSettings Settings => Config.Current.General;
     public string DataDirectory => Config.DataDirectory;

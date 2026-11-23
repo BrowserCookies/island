@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Threading;
 using Island.Core.Config;
 using Island.Core.Scripts;
+using Island.Search;
 using Island.Services;
 using WinForms = System.Windows.Forms;
 
@@ -17,6 +18,7 @@ public partial class App : Application
     private RegisteredWaitHandle? _showWait;
     private WinForms.NotifyIcon? _tray;
     private IslandController? _controller;
+    private SearchController? _search;
     private AppServices? _services;
     private ForegroundTracker? _tracker;
     private HotkeyService? _hotkeys;
@@ -73,6 +75,10 @@ public partial class App : Application
 
         _controller = new IslandController(_services);
         _controller.Start();
+        _services.Spotify = new SpotifyService(_config.DataDirectory, toasts, Dispatcher);
+        _search = new SearchController(_services, _controller);
+        _search.AttachSpotify(_services.Spotify.SearchAsync, _services.Spotify.PlayAsync);
+        _search.Start();
         CreateTrayIcon();
 
         // ---- config problems are reported, never silently swallowed

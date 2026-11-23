@@ -34,8 +34,11 @@ public partial class SettingsViewModel : ObservableObject
         _tick.Start();
         _undoTimer = new DispatcherTimer(TimeSpan.FromSeconds(8), DispatcherPriority.Background, (_, _) => DismissUndo(), services.Dispatcher);
         _undoTimer.Stop();
+        if (services.Spotify is not null) services.Spotify.StatusChanged += OnSpotifyStatusChanged;
         Refresh();
     }
+
+    private void OnSpotifyStatusChanged(object? sender, EventArgs e) => RefreshSpotifyStatus();
 
     public static IReadOnlyList<ActionType> ActionTypes { get; } = Enum.GetValues<ActionType>();
     public static IReadOnlyList<OutputHandling> OutputModes { get; } = Enum.GetValues<OutputHandling>();
@@ -146,6 +149,7 @@ public partial class SettingsViewModel : ObservableObject
         _tick.Stop();
         _undoTimer.Stop();
         WatchAction(null);
+        if (_s.Spotify is not null) _s.Spotify.StatusChanged -= OnSpotifyStatusChanged;
     }
 
     // ------------------------------------------------------------------ tree editing
@@ -394,6 +398,97 @@ public partial class SettingsViewModel : ObservableObject
             HotkeyStatus = err ?? $"{g} is not available.";
             HotkeyStatusIsError = true;
         }
+    }
+
+    // ------------------------------------------------------------------ search hotkey
+
+    [ObservableProperty] private string? _searchHotkeyStatus;
+    [ObservableProperty] private bool _searchHotkeyStatusIsError;
+
+    public void SetSearchHotkey(HotkeyGesture? gesture)
+    {
+        if (gesture is null)
+        {
+            Working.General.SearchHotkey = null;
+            SearchHotkeyStatus = "No search shortcut.";
+            SearchHotkeyStatusIsError = false;
+            return;
+        }
+
+        var g = gesture.Value;
+        Working.General.SearchHotkey = g.ToString();
+        if (HotkeyGesture.TryParse(Working.General.Hotkey, out var main) && (main == g || main.WithShift() == g))
+        {
+            SearchHotkeyStatus = $"{g} is already used by the island hotkey.";
+            SearchHotkeyStatusIsError = true;
+            return;
+        }
+        bool isCurrent = HotkeyGesture.TryParse(_s.Config.Current.General.SearchHotkey, out var current) && current == g;
+        if (isCurrent || _s.Hotkeys is null)
+        {
+            SearchHotkeyStatus = $"{g} opens the search bar.";
+            SearchHotkeyStatusIsError = false;
+        }
+        else if (_s.Hotkeys.IsAvailable(g, out var err))
+        {
+            SearchHotkeyStatus = $"{g} is available.";
+            SearchHotkeyStatusIsError = false;
+        }
+        else
+        {
+            SearchHotkeyStatus = err ?? $"{g} is not available.";
+            SearchHotkeyStatusIsError = true;
+        }
+    }
+
+    // ------------------------------------------------------------------ services: Spotify
+
+    public string SpotifyRedirectUri => Island.Core.Search.SpotifyProtocol.RedirectUri;
+    public bool SpotifySignedIn => _s.Spotify?.IsSignedIn == true;
+    public bool SpotifyBusy => _s.Spotify?.IsSigningIn == true;
+    public bool SpotifyCanSignIn => _s.Spotify is { IsSigningIn: false };
+    public string SpotifyStatus => _s.Spotify switch
+    {
+        null => "Spotify isn't available.",
+        { IsSigningIn: true } => "Waiting for you to finish signing in in the browser…",
+        { IsSignedIn: true, DisplayName: { } name } => $"Signed in as {name}. Songs appear in the search bar.",
+        { IsSignedIn: true } => "Signed in. Songs appear in the search bar.",
+        _ => "Not signed in.",
+    };
+
+    public void RefreshSpotifyStatus()
+    {
+        OnPropertyChanged(nameof(SpotifySignedIn));
+        OnPropertyChanged(nameof(SpotifyBusy));
+        OnPropertyChanged(nameof(SpotifyCanSignIn));
+        OnPropertyChanged(nameof(SpotifyStatus));
+    }
+
+    [RelayCommand]
+    private async Task SpotifySignInAsync()
+    {
+        if (_s.Spotify is null) return;
+        try
+        {
+            await _s.Spotify.SignInAsync(Working.Services.Spotify.ClientId, CancellationToken.None);
+            _s.Toasts.Success(SpotifyStatus, "Spotify");
+        }
+        catch (InvalidOperationException ex)
+        {
+            _s.Toasts.Error(ex.Message, "Spotify");
+        }
+        catch (Exception ex) when (ex is System.Net.Http.HttpRequestException or TaskCanceledException or IOException)
+        {
+            _s.Toasts.Error($"Couldn't reach Spotify: {ex.Message}", "Spotify");
+        }
+        RefreshSpotifyStatus();
+    }
+
+    [RelayCommand]
+    private void SpotifySignOut()
+    {
+        _s.Spotify?.SignOut();
+        RefreshSpotifyStatus();
     }
 
     private sealed record UndoInfo(ButtonItem Item, ObservableCollection<ButtonItem> List, int Index);

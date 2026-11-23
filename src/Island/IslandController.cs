@@ -54,7 +54,7 @@ public sealed class IslandController : IIslandHost, IDisposable
 
         _panel = new PanelWindow(_panelVm);
         _panel.TileClicked += (_, tile) => OnTileClicked(tile);
-        _panel.SizeChanged += (_, _) =>
+        _panel.NativeSizeChanged += (_, _) =>
         {
             if (IsExpanded) PositionPanel();
         };
@@ -76,6 +76,9 @@ public sealed class IslandController : IIslandHost, IDisposable
         _s.Config.ConfigChanged += (_, _) => ApplyConfig();
         _s.Theme.ThemeChanged += (_, _) => UpdateSettingsWindowChrome();
     }
+
+    /// <summary>The search shortcut was pressed.</summary>
+    public event EventHandler? SearchRequested;
 
     public bool IsExpanded { get; private set; }
     public bool IsIslandVisible => _island.IsVisible;
@@ -197,6 +200,36 @@ public sealed class IslandController : IIslandHost, IDisposable
         _island.ReassertTopmost();
     }
 
+    /// <summary>Expands the island with the given group (and the groups containing it) opened.</summary>
+    public void OpenGroup(Guid groupId)
+    {
+        var path = FindPath(_s.Config.Current.Buttons, groupId);
+        if (path is null) return;
+        if (IsExpanded) Collapse();
+        Expand();
+        foreach (var id in path)
+        {
+            var tile = _panelVm.AllTiles.FirstOrDefault(t => t.Item.Id == id);
+            if (tile is null || tile.IsOpen) continue;
+            _panelVm.ToggleGroup(tile);
+        }
+
+        static List<Guid>? FindPath(IEnumerable<ButtonItem> items, Guid target)
+        {
+            foreach (var b in items)
+            {
+                if (b.Id == target) return new List<Guid> { b.Id };
+                if (b.Children is null) continue;
+                if (FindPath(b.Children, target) is { } sub)
+                {
+                    sub.Insert(0, b.Id);
+                    return sub;
+                }
+            }
+            return null;
+        }
+    }
+
     private void OnTileClicked(TileViewModel tile)
     {
         var item = tile.Item;
@@ -262,6 +295,13 @@ public sealed class IslandController : IIslandHost, IDisposable
         if (_s.Hotkeys is null) return;
         foreach (var id in _hotkeyIds) _s.Hotkeys.Unregister(id);
         _hotkeyIds.Clear();
+
+        if (HotkeyGesture.TryParse(g.SearchHotkey, out var search))
+        {
+            var id = _s.Hotkeys.Register(search, () => SearchRequested?.Invoke(this, EventArgs.Empty), out var searchErr);
+            if (id is { } sid) _hotkeyIds.Add(sid);
+            else _s.Toasts.Error(searchErr ?? $"Couldn't register {search}.", "Search shortcut");
+        }
 
         if (!HotkeyGesture.TryParse(g.Hotkey, out var gesture)) return;
 

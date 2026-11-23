@@ -95,6 +95,21 @@ public class HotkeyTests
         Assert.Equal("Ctrl+Alt+Space", g.ToString());
         Assert.Equal("Ctrl+Alt+Shift+Space", g.WithShift().ToString());
     }
+
+    [Fact]
+    public void FormatsWinFirst_LikeWindows()
+    {
+        Assert.True(HotkeyGesture.TryParse("shift+win+f", out var g));
+        Assert.Equal("Win+Shift+F", g.ToString());
+    }
+
+    [Fact]
+    public void DefaultSearchHotkey_IsAlreadyCanonical()
+    {
+        var text = new Island.Core.Models.GeneralSettings().SearchHotkey;
+        Assert.True(HotkeyGesture.TryParse(text, out var g));
+        Assert.Equal(text, g.ToString()); // otherwise Settings shows "Unsaved changes" on open
+    }
 }
 
 public class ButtonTreeTests
@@ -192,6 +207,14 @@ public class ValidatorTests
         Assert.Empty(Check(new LaunchAppAction { Path = "notepad" })); // resolved via PATH
         Assert.Contains(Check(new LaunchAppAction { Path = @"C:\missing.exe" }), m => m.Contains("not found"));
         Assert.Contains(Check(new LaunchAppAction { Path = "" }), m => m.Contains("required"));
+    }
+
+    [Fact]
+    public void LaunchApp_ShellNamespacePath_IsNotCheckedOnDisk()
+    {
+        // Store apps are launched through the shell namespace; there is no file to check.
+        Assert.Empty(Check(new LaunchAppAction { Path = @"shell:AppsFolder\Microsoft.WindowsCalculator_8wekyb3d8bbwe!App" }));
+        Assert.Empty(Check(new LaunchAppAction { Path = @"SHELL:AppsFolder\Some.App!App" }));
     }
 
     [Fact]

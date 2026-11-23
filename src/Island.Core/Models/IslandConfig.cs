@@ -10,6 +10,19 @@ public partial class IslandConfig : ObservableObject
     [ObservableProperty] private int _schemaVersion = CurrentSchemaVersion;
     [ObservableProperty] private GeneralSettings _general = new();
     [ObservableProperty] private ObservableCollection<ButtonItem> _buttons = new();
+    [ObservableProperty] private ServicesSettings _services = new();
+}
+
+/// <summary>Connections to outside services (Settings → Services). Secrets are not stored here.</summary>
+public partial class ServicesSettings : ObservableObject
+{
+    [ObservableProperty] private SpotifySettings _spotify = new();
+}
+
+public partial class SpotifySettings : ObservableObject
+{
+    /// <summary>Client ID of the user's own Spotify developer app (not a secret; PKCE needs no client secret).</summary>
+    [ObservableProperty] private string? _clientId;
 }
 
 public enum ExpandLayout { Row, Column, Grid }
@@ -24,6 +37,8 @@ public partial class GeneralSettings : ObservableObject
     /// <summary>Global hotkey, e.g. "Ctrl+Alt+Space". Empty = none. The same hotkey + Shift opens settings.</summary>
     [ObservableProperty] private string? _hotkey = "Ctrl+Alt+Space";
     [ObservableProperty] private HotkeyAction _hotkeyAction = HotkeyAction.ToggleExpand;
+    /// <summary>Global hotkey that opens the search bar. Empty = none.</summary>
+    [ObservableProperty] private string? _searchHotkey = "Win+Shift+F";
 
     // Island
     [ObservableProperty] private bool _snapEnabled = true;

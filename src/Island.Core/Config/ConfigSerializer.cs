@@ -100,6 +100,8 @@ public static class ConfigSerializer
         config.SchemaVersion = IslandConfig.CurrentSchemaVersion;
         config.General ??= new GeneralSettings();
         config.Buttons ??= new ObservableCollection<ButtonItem>();
+        config.Services ??= new ServicesSettings();
+        config.Services.Spotify ??= new SpotifySettings();
         var seen = new HashSet<Guid>();
         // Drop null entries (e.g. "buttons": [null]).
         foreach (var nullItem in config.Buttons.Where(b => b is null).ToList()) config.Buttons.Remove(nullItem);

@@ -54,6 +54,8 @@ src/Island.Core/             net8.0. Platform-neutral logic: NO WPF, NO Win32. U
   Scripts/                   PlaceholderExpander, InterpreterResolver, ScriptOutputParser, ProcessRunner,
                              RunLog, CommandLine (Windows quoting/splitting)
   Util/                      ExplorerPath, TerminalCommandBuilder, HotkeyGesture, DropFactory
+  Search/                    Calculator, SearchMatcher, SearchHistory, SearchModels (SearchResultSet),
+                             WindowsSearchQuery, SpotifyProtocol
 src/Island/                  net8.0-windows10.0.17763.0 WPF app (UseWPF + UseWindowsForms)
   App.xaml(.cs)              Composition root: single instance, services, tray icon, error handling
   IslandController.cs        Expand/collapse, Esc + click-outside, hotkeys, island context menu,
@@ -61,6 +63,8 @@ src/Island/                  net8.0-windows10.0.17763.0 WPF app (UseWPF + UseWin
   Views/                     IslandWindow, PanelWindow, SettingsWindow, IconPickerWindow, ToastWindow,
                              OutputPopupWindow, RunLogWindow + RunLogView (shared UserControl)
   ViewModels/                PanelViewModel (TileViewModel, PanelLevel), SettingsViewModel
+  Search/                    SearchWindow, SearchViewModel, SearchController, AppCatalog, FileSearch,
+                             SpotifyService
   Controls/                  IconView (renders IconSpec), Spinner, value converters
   Services/                  ConfigService, ThemeService, ToastService, HotkeyService, IconService (+GlyphCatalog),
                              ForegroundTracker, ExplorerFolderResolver (+CurrentFolderService), MonitorService,
@@ -82,7 +86,7 @@ README.md                    User documentation (usage, actions, script protocol
 
 ```bash
 dotnet build Island.sln
-dotnet test tests/Island.Tests                       # 130 tests, run on any OS
+dotnet test tests/Island.Tests                       # 211 tests, run on any OS
 dotnet run --project src/Island                      # Windows only
 dotnet publish src/Island/Island.csproj -p:PublishProfile=SingleFile
 #   -> publish/win-x64/Island.exe (self-contained, compressed, ~77 MB)
@@ -182,6 +186,8 @@ paths in Core: Linux doesn't treat `\` as a separator. Use the string helpers in
 | `runlog.json` | Last 50 script runs |
 | `scripts\<buttonId:N><ext>` | Inline scripts |
 | `icons\` | Imported images |
+| `search-history.json` | Search result pick counts (ranking boost), max 500 entries |
+| `secrets\spotify.bin` | Spotify refresh token + Client ID, DPAPI (CurrentUser) encrypted |
 | `error.log` | Unexpected errors |
 
 `ConfigStore` handles loading and saving:
@@ -242,6 +248,11 @@ dragging the island never touches the config or its backup.
   - Row layout opens sideways (left for right corners) and aligns to the island's vertical edge.
   - Column and Grid layouts open vertically (up for bottom corners).
   - The result is clamped to the work area.
+
+  The panel repositions on the HWND's `WM_SIZE` (`PanelWindow.NativeSizeChanged`), **not** on WPF
+  `SizeChanged`: with `SizeToContent`, WPF raises `SizeChanged` before it resizes the HWND, so
+  `GetWindowRect` still returned the old size and an opened group grew off the bottom of the screen.
+  This was a real bug.
 
   `PanelViewModel` keeps the first button nearest the island: tiles are reversed for Row/right and
   Column/bottom. Opened group levels stack away from the island, and
@@ -393,7 +404,11 @@ dragging the island never touches the config or its backup.
   - **Glyph:** a hex code point in `IconFont`.
   - **AppIcon:** `IconService.GetFileIcon`, using the 48 px system image list (`SHGetImageList` /
     `IImageList`), falling back to `SHGetFileInfo` and then `ExtractAssociatedIcon`. Results are
-    cached.
+    cached. `shell:` paths (e.g. `shell:AppsFolder\<AppUserModelID>` for Store apps) go through
+    `IShellItemImageFactory` instead. The default Calculator button uses
+    `DefaultConfig.CalculatorAppIcon` for its icon, because `System32\calc.exe` is a stub whose own
+    icon is a grey/white placeholder; it still launches through `calc.exe`.
+    `ButtonValidator` doesn't check `shell:` launch paths on disk.
   - **Image:** a file loaded with `OnLoad` caching so it isn't locked. With a tint, the tint is
     painted through the image's alpha.
   - **Emoji:** Segoe UI Emoji. WPF renders it monochrome.
@@ -406,6 +421,46 @@ dragging the island never touches the config or its backup.
   edge (`ToastService.Relayout`, physical pixels, DPI-scaled padding). At most 4 are shown, and
   hovering pauses the auto-dismiss timer. These are custom windows, not Windows notifications, so no
   AUMID or package identity is needed.
+
+### Search bar (`Search/`)
+
+Design: `docs/superpowers/specs/2026-11-24-spotlight-search-design.md`.
+
+- **Window.** `SearchWindow` is created at startup and pre-warmed (`Prewarm`: shown at opacity 0,
+  then hidden) so the hotkey only shows it. Unlike the island it **activates** (you type into it), but
+  it's a topmost tool window (`MakeFloating(noActivate: false)`). It opens on the monitor under the
+  cursor: moved there first so WPF lays out at that DPI, then centered with the pill top at 28% of the
+  work area. It closes on Esc, on deactivation, on the hotkey again, and before running a result; on
+  close it calls `SetForegroundWindow(LastExternalWindowIfAlive)` so the previous app gets focus back.
+- **Hotkey.** `GeneralSettings.SearchHotkey` (default `Win+Shift+F`), registered in
+  `IslandController.RegisterHotkeys`, which raises `SearchRequested`. Ctrl+Shift+F was rejected (it's
+  "Find in files" in editors) and Alt+Shift+… too (Alt+Shift switches keyboard layouts).
+  `HotkeyGesture.ToString` puts Win first; the default string must stay canonical or Settings shows
+  "Unsaved changes" on open (test `DefaultSearchHotkey_IsAlreadyCanonical`).
+- **Sources.** Local, synchronous per keystroke: apps (`AppCatalog`: `shell:AppsFolder` via
+  `Shell.Application` on an STA thread, refreshed at most every 10 min; launched as
+  `shell:AppsFolder\<parsing name>`), Island buttons (flattened, bias +30), Island commands (bias +10),
+  and the calculator. Asynchronous: files/folders (`FileSearch`, Windows Search over
+  `System.Data.OleDb`, `Provider=Search.CollatorDSO`) and Spotify tracks (debounced 250 ms). Async
+  blocks need ≥ 2 characters and are dropped unless `SearchResultSet.Accept(generation)`.
+- **Ranking.** `SearchMatcher.Score` tiers: exact > prefix > word-start > initials > substring >
+  word-aware subsequence (must start at a word start; may only jump words at word starts), minus a
+  length penalty; plus `SearchHistory.Boost`. Blocks: calculator + local (≤ 6), files (≤ 5), songs
+  (≤ 5), in that order so arriving results don't move the rows above.
+- **Files.** The index's word-breaking matches inside names (`count_documents`), so `FileSearch` asks
+  for 40 rows, drops `WindowsSearchQuery.IsNoisePath` (node_modules, .git, AppData, obj, .vs,
+  __pycache__, $Recycle.Bin) and re-ranks with `SearchMatcher`. Any OLE DB failure → no file results.
+- **Icons.** App icons for `shell:` paths come from `IShellItemImageFactory` (48 px, alpha kept via
+  `GetDIBits`; `CreateBitmapSourceFromHBitmap` would drop alpha). All app icons are warmed on a
+  background thread after the catalog loads so typing never extracts icons.
+- **Spotify** (`SpotifyService`): Authorization Code + PKCE. A `TcpListener` on `127.0.0.1:43819`
+  receives `/callback` (no http.sys/URL ACL needed). Spotify's Feb 2026 Development Mode rules:
+  loopback redirects must be `127.0.0.1` (not `localhost`), the app owner needs Premium, search
+  `limit` max is 10. The refresh token and the Client ID that issued it are stored DPAPI-encrypted
+  in `secrets\spotify.bin`; the Client ID field in config only pre-fills Settings. A refresh that
+  fails with HTTP 400 signs out (one toast); other failures keep the login. Play:
+  `PUT /me/player/play`; on `NO_ACTIVE_DEVICE`, pick a device from `/me/player/devices`, or open
+  `spotify:` and poll for up to 10 s.
 
 ### Settings window (`SettingsViewModel`)
 
@@ -435,6 +490,8 @@ dragging the island never touches the config or its backup.
   `HotkeyService.IsAvailable`. The current hotkey counts as available, since we hold it ourselves.
   The settings hotkey is the main hotkey + Shift; there's none if the main hotkey already has
   Shift.
+- **Services tab.** Spotify setup steps, redirect URI with Copy, Client ID (`Working.Services.Spotify.ClientId`),
+  Sign in / Sign out, status from `SpotifyService.StatusChanged`.
 - **Run log refresh.** `RunLogView` must (re)subscribe in `Loaded`: `TabControl` unloads tab
   content when you switch tabs. This was a real bug.
 
@@ -495,9 +552,9 @@ dragging the island never touches the config or its backup.
 
 ## Known limitations / ideas
 
-- **Not verified on Windows.** At the time of writing the app had only been compiled and
-  unit-tested, never run on Windows. First runs may surface runtime issues: binding errors,
-  resource lookups, layout, COM behavior.
+- **Partly verified on Windows.** The island, panel, Settings and the search bar have been run on
+  Windows 11. Spotify sign-in and playback need a user's own Client ID and haven't been exercised
+  end to end.
 - **Settings vs hand edits.** Hand-editing `config.json` while Settings is open: saving from
   Settings overwrites the hand edits.
 - **No settings shortcut with Shift.** If the main hotkey includes Shift, there's no separate

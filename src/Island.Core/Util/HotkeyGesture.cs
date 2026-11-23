@@ -63,11 +63,12 @@ public readonly record struct HotkeyGesture(HotkeyModifiers Modifiers, string Ke
 
     public override string ToString()
     {
+        // Win first, as Windows writes its own shortcuts (Win+Shift+S).
         var parts = new List<string>();
+        if (Modifiers.HasFlag(HotkeyModifiers.Win)) parts.Add("Win");
         if (Modifiers.HasFlag(HotkeyModifiers.Ctrl)) parts.Add("Ctrl");
         if (Modifiers.HasFlag(HotkeyModifiers.Alt)) parts.Add("Alt");
         if (Modifiers.HasFlag(HotkeyModifiers.Shift)) parts.Add("Shift");
-        if (Modifiers.HasFlag(HotkeyModifiers.Win)) parts.Add("Win");
         parts.Add(Key);
         return string.Join("+", parts);
     }

@@ -474,6 +474,25 @@
                         </StackPanel>
                         <TextBlock Style="{StaticResource HintText}" Text="The same hotkey with Shift opens this window." />
 
+                        <TextBlock Style="{StaticResource Field}" Text="Search shortcut (opens the search bar in the middle of the screen)" />
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Clear" Margin="6,0,0,0" Tag="search" Click="ClearHotkey_Click" />
+                            <TextBox x:Name="SearchHotkeyBox" Tag="search" IsReadOnly="True" IsReadOnlyCaretVisible="False" Cursor="Hand"
+                                     Text="{Binding Working.General.SearchHotkey, Mode=OneWay, TargetNullValue='(none)'}"
+                                     PreviewKeyDown="HotkeyBox_PreviewKeyDown" GotKeyboardFocus="HotkeyBox_GotFocus" />
+                        </DockPanel>
+                        <TextBlock Text="{Binding SearchHotkeyStatus}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource HintText}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SearchHotkeyStatusIsError}" Value="True">
+                                            <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
                         <TextBlock Style="{StaticResource SectionHeader}" Text="Island" />
                         <CheckBox Content="Snap to screen corners" IsChecked="{Binding Working.General.SnapEnabled}" />
                         <Grid Margin="0,4,0,0">
@@ -586,6 +605,48 @@
                         </StackPanel>
                         <TextBlock Style="{StaticResource HintText}"
                                    Text="config.json is watched: hand edits are picked up live. A backup of the previous version is kept as config.backup.json." />
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ======================================================== SERVICES -->
+            <TabItem Header="Services">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="24,6,24,24" MaxWidth="680" HorizontalAlignment="Left" Width="680">
+                        <TextBlock Style="{StaticResource SectionHeader}" Text="Spotify" />
+                        <TextBlock Style="{StaticResource HintText}" TextWrapping="Wrap"
+                                   Text="Find songs in the search bar and play them with Enter. Needs Spotify Premium. Island signs in through Spotify's own page in your browser and never sees your password." />
+
+                        <TextBlock Style="{StaticResource Field}" Text="One-time setup" />
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ForegroundBrush}" LineHeight="22">
+                            1. Open the Spotify developer dashboard and log in with your Spotify account.<LineBreak />
+                            2. Click Create app. Any name and description will do.<LineBreak />
+                            3. Under Redirect URIs, add the address below exactly as shown.<LineBreak />
+                            4. Under "Which API/SDKs are you planning to use?", tick Web API, then Save.<LineBreak />
+                            5. Copy the app's Client ID, paste it below and click Sign in.
+                        </TextBlock>
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <Button Content="Open Spotify dashboard" Click="OpenSpotifyDashboard_Click" />
+                        </StackPanel>
+
+                        <TextBlock Style="{StaticResource Field}" Text="Redirect URI" />
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Copy" Margin="6,0,0,0" Click="CopyRedirectUri_Click" />
+                            <TextBox IsReadOnly="True" Text="{Binding SpotifyRedirectUri, Mode=OneWay}" Style="{StaticResource CodeTextBox}" />
+                        </DockPanel>
+
+                        <TextBlock Style="{StaticResource Field}" Text="Client ID" />
+                        <TextBox Text="{Binding Working.Services.Spotify.ClientId, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource CodeTextBox}" />
+
+                        <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                            <Button Content="Sign in" Style="{StaticResource AccentButtonStyle}" Command="{Binding SpotifySignInCommand}"
+                                    IsEnabled="{Binding SpotifyCanSignIn}" />
+                            <Button Content="Sign out" Margin="8,0,0,0" Command="{Binding SpotifySignOutCommand}"
+                                    Visibility="{Binding SpotifySignedIn, Converter={StaticResource BoolToVis}}" />
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource HintText}" Margin="0,8,0,0" Text="{Binding SpotifyStatus}" />
+                        <TextBlock Style="{StaticResource HintText}" TextWrapping="Wrap" Margin="0,12,0,0"
+                                   Text="Your sign-in is stored encrypted for your Windows account in %APPDATA%\Island\secrets, not in config.json, so exporting settings never shares it." />
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

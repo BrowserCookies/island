@@ -33,6 +33,14 @@ public static class IconService
 
     private static ImageSource? Extract(string path)
     {
+        // Shell namespace items (e.g. shell:AppsFolder\<AppUserModelID> for Store apps) have no
+        // file to take an icon from; ask the shell item itself.
+        if (path.StartsWith("shell:", StringComparison.OrdinalIgnoreCase))
+        {
+            try { return ExtractShellItem(path, 48); }
+            catch (Exception) { return null; }
+        }
+
         bool exists = File.Exists(path) || Directory.Exists(path);
         uint attrsFlag = exists ? 0 : SHGFI_USEFILEATTRIBUTES;
 
@@ -78,6 +86,54 @@ public static class IconService
             catch (Exception) { }
         }
         return null;
+    }
+
+    private static ImageSource? ExtractShellItem(string parsingName, int size)
+    {
+        var iid = typeof(IShellItemImageFactory).GUID;
+        SHCreateItemFromParsingName(parsingName, IntPtr.Zero, ref iid, out var factory);
+        try
+        {
+            if (factory.GetImage(new SIZE { cx = size, cy = size }, SIIGBF_ICONONLY, out var hbm) != 0 || hbm == IntPtr.Zero)
+                return null;
+            try { return FromHBitmapWithAlpha(hbm); }
+            finally { DeleteObject(hbm); }
+        }
+        finally
+        {
+            System.Runtime.InteropServices.Marshal.ReleaseComObject(factory);
+        }
+    }
+
+    /// <summary>
+    /// Copies a 32-bit HBITMAP (premultiplied alpha, as returned by IShellItemImageFactory) into a
+    /// BitmapSource. Imaging.CreateBitmapSourceFromHBitmap would drop the alpha channel.
+    /// </summary>
+    private static ImageSource? FromHBitmapWithAlpha(IntPtr hbm)
+    {
+        if (GetObject(hbm, System.Runtime.InteropServices.Marshal.SizeOf<BITMAP>(), out var bm) == 0) return null;
+        int w = bm.bmWidth, h = Math.Abs(bm.bmHeight);
+        var header = new BITMAPINFOHEADER
+        {
+            biSize = System.Runtime.InteropServices.Marshal.SizeOf<BITMAPINFOHEADER>(),
+            biWidth = w,
+            biHeight = -h, // negative: top-down rows
+            biPlanes = 1,
+            biBitCount = 32,
+        };
+        var pixels = new byte[w * h * 4];
+        var hdc = GetDC(IntPtr.Zero);
+        try
+        {
+            if (GetDIBits(hdc, hbm, 0, (uint)h, pixels, ref header, 0) == 0) return null;
+        }
+        finally
+        {
+            ReleaseDC(IntPtr.Zero, hdc);
+        }
+        var src = BitmapSource.Create(w, h, 96, 96, PixelFormats.Pbgra32, null, pixels, w * 4);
+        src.Freeze();
+        return src;
     }
 
     private static ImageSource FromHIcon(IntPtr hIcon)

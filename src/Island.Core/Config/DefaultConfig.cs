@@ -5,6 +5,8 @@ namespace Island.Core.Config;
 
 public static class DefaultConfig
 {
+    public const string CalculatorAppIcon = @"shell:AppsFolder\Microsoft.WindowsCalculator_8wekyb3d8bbwe!App";
+
     public static IslandConfig Create()
     {
         var favApps = ButtonItem.Create("Fav apps", IconSpec.Glyph("E734"), new GroupAction(),
@@ -12,7 +14,9 @@ public static class DefaultConfig
                 new LaunchAppAction { Path = @"%WINDIR%\explorer.exe" }),
             ButtonItem.Create("Notepad", IconSpec.App(@"%WINDIR%\System32\notepad.exe"),
                 new LaunchAppAction { Path = @"%WINDIR%\System32\notepad.exe" }),
-            ButtonItem.Create("Calculator", IconSpec.App(@"%WINDIR%\System32\calc.exe"),
+            // System32\calc.exe is a stub that starts the Calculator app; its own icon is a grey
+            // placeholder, so the icon comes from the app's entry in the shell's Apps folder.
+            ButtonItem.Create("Calculator", IconSpec.App(CalculatorAppIcon),
                 new LaunchAppAction { Path = @"%WINDIR%\System32\calc.exe" }));
 
         return new IslandConfig

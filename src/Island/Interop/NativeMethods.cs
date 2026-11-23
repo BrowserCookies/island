@@ -13,6 +13,7 @@ internal static class NativeMethods
     public const int WS_EX_TOPMOST = 0x00000008;
 
     public const int WM_MOUSEACTIVATE = 0x0021;
+    public const int WM_SIZE = 0x0005;
     public const int MA_NOACTIVATE = 3;
     public const int WM_HOTKEY = 0x0312;
     public const int WM_DISPLAYCHANGE = 0x007E;
@@ -216,6 +217,25 @@ internal static class NativeMethods
         [PreserveSig] int GetIcon(int i, int flags, out IntPtr picon);
     }
 
+    // ---------------------------------------------------------------- shell item images (shell: paths, Store apps)
+    public const int SIIGBF_ICONONLY = 0x4;
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct SIZE
+    {
+        public int cx, cy;
+    }
+
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode, PreserveSig = false)]
+    public static extern void SHCreateItemFromParsingName(string path, IntPtr bindCtx, ref Guid riid,
+        [MarshalAs(UnmanagedType.Interface)] out IShellItemImageFactory ppv);
+
+    [ComImport, Guid("BCC18B79-BA16-442F-80C4-8A59C30C463B"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    public interface IShellItemImageFactory
+    {
+        [PreserveSig] int GetImage(SIZE size, int flags, out IntPtr phbm);
+    }
+
     // ---------------------------------------------------------------- shell browser (Explorer tabs)
     public static readonly Guid SID_STopLevelBrowser = new("4C96BE40-915C-11CF-99D3-00AA004AE837");
     public static readonly Guid IID_IShellBrowser = new("000214E2-0000-0000-C000-000000000046");
@@ -238,6 +258,35 @@ internal static class NativeMethods
     [DllImport("gdi32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool DeleteObject(IntPtr hObject);
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct BITMAPINFOHEADER
+    {
+        public int biSize, biWidth, biHeight;
+        public short biPlanes, biBitCount;
+        public int biCompression, biSizeImage, biXPelsPerMeter, biYPelsPerMeter, biClrUsed, biClrImportant;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct BITMAP
+    {
+        public int bmType, bmWidth, bmHeight, bmWidthBytes;
+        public short bmPlanes, bmBitsPixel;
+        public IntPtr bmBits;
+    }
+
+    [DllImport("gdi32.dll")]
+    public static extern int GetObject(IntPtr hObject, int size, out BITMAP bmp);
+
+    [DllImport("gdi32.dll")]
+    public static extern int GetDIBits(IntPtr hdc, IntPtr hbm, uint start, uint lines, [Out] byte[] bits,
+        ref BITMAPINFOHEADER bmi, uint usage);
+
+    [DllImport("user32.dll")]
+    public static extern IntPtr GetDC(IntPtr hwnd);
+
+    [DllImport("user32.dll")]
+    public static extern int ReleaseDC(IntPtr hwnd, IntPtr hdc);
 
     // ---------------------------------------------------------------- structs
     [StructLayout(LayoutKind.Sequential)]

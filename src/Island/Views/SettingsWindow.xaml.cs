@@ -43,6 +43,7 @@ public partial class SettingsWindow : Window
         {
             if (_vm.Working.Buttons.FirstOrDefault() is { } first) _vm.Select(first);
             _vm.SetHotkey(HotkeyGesture.TryParse(_vm.Working.General.Hotkey, out var g) ? g : null);
+            _vm.SetSearchHotkey(HotkeyGesture.TryParse(_vm.Working.General.SearchHotkey, out var sg) ? sg : null);
         };
         Closed += (_, _) => _vm.Stop();
 
@@ -248,11 +249,30 @@ public partial class SettingsWindow : Window
 
     // ------------------------------------------------------------------ hotkey capture
 
-    private void HotkeyBox_GotFocus(object sender, KeyboardFocusChangedEventArgs e)
+    private bool IsSearchBox(object sender) => sender is FrameworkElement { Tag: "search" };
+
+    private void ApplyHotkey(object sender, HotkeyGesture? g)
     {
-        _vm.HotkeyStatus = "Press the new key combination (e.g. Ctrl+Alt+Space). Esc cancels.";
-        _vm.HotkeyStatusIsError = false;
+        if (IsSearchBox(sender)) _vm.SetSearchHotkey(g);
+        else _vm.SetHotkey(g);
     }
+
+    private void SetHotkeyHint(object sender, string text, bool isError)
+    {
+        if (IsSearchBox(sender))
+        {
+            _vm.SearchHotkeyStatus = text;
+            _vm.SearchHotkeyStatusIsError = isError;
+        }
+        else
+        {
+            _vm.HotkeyStatus = text;
+            _vm.HotkeyStatusIsError = isError;
+        }
+    }
+
+    private void HotkeyBox_GotFocus(object sender, KeyboardFocusChangedEventArgs e) =>
+        SetHotkeyHint(sender, "Press the new key combination (e.g. Ctrl+Alt+Space). Esc cancels.", false);
 
     private void HotkeyBox_PreviewKeyDown(object sender, KeyEventArgs e)
     {
@@ -261,12 +281,13 @@ public partial class SettingsWindow : Window
         if (key == Key.Escape)
         {
             Keyboard.ClearFocus();
-            _vm.SetHotkey(HotkeyGesture.TryParse(_vm.Working.General.Hotkey, out var cur) ? cur : null);
+            var current = IsSearchBox(sender) ? _vm.Working.General.SearchHotkey : _vm.Working.General.Hotkey;
+            ApplyHotkey(sender, HotkeyGesture.TryParse(current, out var cur) ? cur : null);
             return;
         }
         if (key is Key.Back or Key.Delete && Keyboard.Modifiers == ModifierKeys.None)
         {
-            _vm.SetHotkey(null);
+            ApplyHotkey(sender, null);
             return;
         }
         // Wait for a non-modifier key.
@@ -281,18 +302,20 @@ public partial class SettingsWindow : Window
         if (Keyboard.IsKeyDown(Key.LWin) || Keyboard.IsKeyDown(Key.RWin)) mods |= HotkeyModifiers.Win;
 
         var text = new HotkeyGesture(mods, key.ToString()).ToString();
-        if (HotkeyGesture.TryParse(text, out var g))
-        {
-            _vm.SetHotkey(g);
-        }
-        else
-        {
-            _vm.HotkeyStatus = "Use at least one modifier (Ctrl, Alt, Shift or Win), or an F-key.";
-            _vm.HotkeyStatusIsError = true;
-        }
+        if (HotkeyGesture.TryParse(text, out var g)) ApplyHotkey(sender, g);
+        else SetHotkeyHint(sender, "Use at least one modifier (Ctrl, Alt, Shift or Win), or an F-key.", true);
     }
 
-    private void ClearHotkey_Click(object sender, RoutedEventArgs e) => _vm.SetHotkey(null);
+    private void ClearHotkey_Click(object sender, RoutedEventArgs e) => ApplyHotkey(sender, null);
+
+    private void CopyRedirectUri_Click(object sender, RoutedEventArgs e)
+    {
+        ClipboardHelper.SetText(_vm.SpotifyRedirectUri);
+        _vm.Services.Toasts.Success("Redirect URI copied.");
+    }
+
+    private void OpenSpotifyDashboard_Click(object sender, RoutedEventArgs e) =>
+        ShellLauncher.Open("https://developer.spotify.com/dashboard");
 
     // ------------------------------------------------------------------ tree: selection & keys
 

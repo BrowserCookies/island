@@ -13,6 +13,7 @@ Built with .NET 8, WPF and C# (MVVM via CommunityToolkit.Mvvm). It has no web st
 
 - [Getting started](#getting-started)
 - [Using the island](#using-the-island)
+- [Search bar](#search-bar)
 - [Built-in actions](#built-in-actions)
 - [Running your own scripts](#running-your-own-scripts)
   - [JSON protocol](#json-protocol)
@@ -61,6 +62,7 @@ Only one Island runs at a time. Launching it again makes the existing island pul
 | **Esc**, clicking anywhere else, or running an action | Closes the menu. Closing after an action can be turned off. |
 | **Ctrl+Alt+Space** (default) | Opens and closes the menu, or shows and hides the island (configurable). |
 | **Ctrl+Alt+Shift+Space** | Opens Settings. |
+| **Win+Shift+F** (default) | Opens the [search bar](#search-bar). |
 | Tray icon | Show/Hide island, Reset position, Settings, Script run log, Exit. Double-click opens Settings. |
 
 - The menu always opens **away from the corner** the island is in. For example, from the bottom-right
@@ -87,11 +89,51 @@ Only one Island runs at a time. Launching it again makes the existing island pul
 
 ---
 
+## Search bar
+
+Press **Win+Shift+F** (change it under **Settings → General**) and a pill-shaped search bar opens in
+the middle of the screen you're on, on top of every app, ready for typing. Results update as you type.
+
+| Type | You get |
+|---|---|
+| An app name (`calc`, `vsc`, `ntpd`) | Installed apps, including Store apps. Prefixes, word starts and initials all match. |
+| A button's name | Your Island buttons and groups (a group opens the island with it expanded). |
+| `settings`, `screenshot`, `hide` | Island commands: Settings, Show/Hide island, Script run log, Screenshot (snip or full screen). |
+| A file or folder name | Matches from the Windows Search index. |
+| A sum (`12*7+3`, `2^10`, `15%*80`, `3,5×2`) | `= 87` as the top result; Enter copies it. |
+| A song (when Spotify is connected) | Tracks; Enter plays the track in Spotify. |
+
+| Key | Does |
+|---|---|
+| ↑ / ↓, PgUp / PgDn | Move through results |
+| Enter | Run the selected result |
+| Ctrl+Enter or Shift+Enter | Show a file or folder in Explorer |
+| Esc, the shortcut again, or clicking elsewhere | Close |
+
+Things you pick often move up for the same query (stored in `search-history.json`). Files come from
+the index Windows already keeps, so Island holds no file list in memory: only folders Windows indexes
+are found (by default your user folders; change it in Windows' *Indexing Options*). Build and cache
+folders like `node_modules`, `.git`, `obj` and `AppData` are left out.
+
+### Spotify
+
+Under **Settings → Services → Spotify**, follow the five setup steps (create a free Spotify developer
+app, add the redirect URI `http://127.0.0.1:43819/callback`, tick *Web API*, paste the Client ID) and
+click **Sign in**. Signing in happens on Spotify's own page in your browser. Requirements and notes:
+
+- Spotify only lets apps start playback for **Premium** accounts, and its developer mode needs the
+  app owner to have Premium.
+- If nothing is playing anywhere, Island starts the Spotify app and plays on it.
+- The sign-in is stored encrypted for your Windows account in `%APPDATA%\Island\secrets\spotify.bin`,
+  never in `config.json`, so exporting your settings doesn't share it.
+
+---
+
 ## Built-in actions
 
 | Action | Options | Behavior |
 |---|---|---|
-| **Launch app** | path, arguments, working dir, run as admin | Starts an `.exe`, `.lnk` or any file through the shell. Bare names such as `notepad` or `code` are found on PATH. `%ENV%` variables work. |
+| **Launch app** | path, arguments, working dir, run as admin | Starts an `.exe`, `.lnk` or any file through the shell. Bare names such as `notepad` or `code` are found on PATH. `%ENV%` variables work. Store apps work as `shell:AppsFolder\<app id>`. |
 | **Open folder** | path | Opens the folder in Explorer. |
 | **Open file** | path | Opens the file with its default app. |
 | **Open URL** | URL (optional) | Opens the URL in your default browser. If empty, opens the browser's home page. `mailto:`, `ms-settings:` and other schemes also work. |
@@ -286,10 +328,14 @@ with **Shift**.
 ### General tab
 
 Settings for start with Windows, the global hotkey (with conflict detection) and what the hotkey
-does, snapping and snap margin, island size, idle opacity, hover effect, menu layout (row, column,
+does, the search shortcut, snapping and snap margin, island size, idle opacity, hover effect, menu layout (row, column,
 grid with N columns), labels under icons, collapse after action, theme (System, Dark or Light) and
 accent color. It also sets defaults: Claude command, fallback folder, screenshot folder, Windows
 PowerShell or PowerShell 7, and the Python and Node commands.
+
+### Services tab
+
+Connections to outside services. Currently Spotify (see [Search bar → Spotify](#spotify)).
 
 ### Saving
 
@@ -313,6 +359,8 @@ Everything is stored in `%APPDATA%\Island\`:
 | `runlog.json` | The last 50 script runs |
 | `scripts\` | Inline scripts (`<button id>.<ext>`) |
 | `icons\` | Imported icon images |
+| `search-history.json` | How often search results were picked (ranking only) |
+| `secrets\spotify.bin` | Spotify sign-in, encrypted for your Windows account |
 | `error.log` | Unexpected errors, if any |
 
 - **Hand edits apply live.** The file is watched, and changes are picked up about 0.4 s after you
@@ -362,6 +410,7 @@ src/Island.Core/        Platform-neutral logic (net8.0), unit-tested on any OS
   Config/               ConfigSerializer (+migrations), ConfigStore (backup / broken-file handling),
                         DefaultConfig, ButtonValidator, ButtonTree (reorder / group moves)
   Layout/               SnapCalculator, PanelPlacement, easing (all in physical pixels)
+  Search/               Calculator, SearchMatcher, SearchHistory, WindowsSearchQuery, SpotifyProtocol (PKCE, JSON)
   Scripts/              PlaceholderExpander, InterpreterResolver, ScriptOutputParser (JSON protocol),
                         ProcessRunner (timeout / cancel / kill tree), RunLog, CommandLine quoting
   Util/                 ExplorerPath (LocationURL → path), TerminalCommandBuilder, HotkeyGesture, DropFactory
@@ -371,6 +420,8 @@ src/Island/             WPF app (net8.0-windows)
   Views/                IslandWindow, PanelWindow, SettingsWindow, IconPickerWindow, ToastWindow,
                         OutputPopupWindow, RunLogWindow/RunLogView
   ViewModels/           PanelViewModel, SettingsViewModel
+  Search/               SearchWindow + SearchViewModel + SearchController, AppCatalog (Apps folder),
+                        FileSearch (Windows Search via OLE DB), SpotifyService
   Services/             ConfigService (live reload), ForegroundTracker, ExplorerFolderResolver,
                         ActionRunner + Handlers/ (one IActionHandler per action type),
                         ScreenshotService, HotkeyService, IconService, ToastService,
@@ -404,7 +455,9 @@ dotnet run --project src/Island
 The tests cover config serialization (polymorphism, hand-edited JSON, migrations, normalization),
 the config store (backup, broken-file preservation), snap and panel placement math, placeholder
 expansion, interpreter resolution, JSON protocol parsing, process timeout and cancellation, the run
-log, hotkey parsing, tree moves, validation and Explorer drop handling.
+log, hotkey parsing, tree moves, validation and Explorer drop handling, plus the search bar's
+calculator, name matching and ranking history, Windows Search query building, and the Spotify
+sign-in (PKCE) and response parsing.
 
 `Island.Core` targets plain `net8.0`, so its tests run on Windows, Linux or macOS. The WPF project
 sets `EnableWindowsTargeting`, so it also compiles on non-Windows CI. It only runs on Windows.

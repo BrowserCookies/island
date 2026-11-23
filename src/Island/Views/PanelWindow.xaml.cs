@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Island.Core.Layout;
@@ -20,12 +21,29 @@ public partial class PanelWindow : Window
         InitializeComponent();
         DataContext = vm;
         ViewModel = vm;
-        SourceInitialized += (_, _) => WindowHelper.MakeFloating(this);
+        SourceInitialized += (_, _) =>
+        {
+            WindowHelper.MakeFloating(this);
+            HwndSource.FromHwnd(new WindowInteropHelper(this).Handle)?.AddHook(WndProc);
+        };
     }
 
     public PanelViewModel ViewModel { get; }
 
     public event EventHandler<TileViewModel>? TileClicked;
+
+    /// <summary>
+    /// Raised when the native window has been resized (e.g. a group opened). Use this rather than
+    /// <see cref="FrameworkElement.SizeChanged"/> to reposition: with SizeToContent, WPF raises
+    /// SizeChanged *before* it resizes the HWND, so GetWindowRect still returns the old size there.
+    /// </summary>
+    public event EventHandler? NativeSizeChanged;
+
+    private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        if (msg == NativeMethods.WM_SIZE) NativeSizeChanged?.Invoke(this, EventArgs.Empty);
+        return IntPtr.Zero;
+    }
 
     public int InsetPx => (int)Math.Round(ShadowPad * WindowHelper.GetScale(this));
 
