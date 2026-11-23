@@ -1,0 +1,140 @@
+<Window x:Class="Island.Views.IconPickerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="clr-namespace:Island.Controls"
+        Title="Choose an icon" Width="680" Height="600" MinWidth="520" MinHeight="460"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" ResizeMode="CanResize"
+        Background="{DynamicResource WindowBackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}" FontSize="13">
+    <Window.Resources>
+        <c:ColorBrushConverter x:Key="ColorBrush" />
+        <Style x:Key="PickTile" TargetType="Button">
+            <Setter Property="Width" Value="46" />
+            <Setter Property="Height" Value="46" />
+            <Setter Property="Margin" Value="2" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" CornerRadius="6" Background="Transparent" BorderThickness="1" BorderBrush="Transparent">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ControlHoverBrush}" />
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <DockPanel>
+        <!-- bottom: preview, colors, OK/Cancel -->
+        <Border DockPanel.Dock="Bottom" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource ControlBorderBrush}"
+                BorderThickness="0,1,0,0" Padding="14,10">
+            <DockPanel>
+                <Grid Width="56" Height="56" DockPanel.Dock="Left">
+                    <Border CornerRadius="10" Background="{DynamicResource TileBackgroundBrush}" BorderBrush="{DynamicResource ControlBorderBrush}" BorderThickness="1" />
+                    <Border CornerRadius="10" Background="{Binding Background, Converter={StaticResource ColorBrush}}" />
+                    <c:IconView x:Name="Preview" Icon="{Binding}" IconSize="30" Foreground="{DynamicResource ForegroundBrush}" />
+                </Grid>
+                <StackPanel DockPanel.Dock="Left" Margin="14,0,0,0" Width="130">
+                    <TextBlock Text="Tint (#RRGGBB)" FontSize="11.5" Foreground="{DynamicResource SubtleForegroundBrush}" />
+                    <TextBox Text="{Binding TintColor, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}" Margin="0,2,0,0" />
+                </StackPanel>
+                <StackPanel DockPanel.Dock="Left" Margin="10,0,0,0" Width="130">
+                    <TextBlock Text="Background (#RRGGBB)" FontSize="11.5" Foreground="{DynamicResource SubtleForegroundBrush}" />
+                    <TextBox Text="{Binding Background, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}" Margin="0,2,0,0" />
+                </StackPanel>
+                <Button DockPanel.Dock="Right" Content="Cancel" MinWidth="80" Margin="8,0,0,0" IsCancel="True" VerticalAlignment="Bottom" />
+                <Button DockPanel.Dock="Right" Content="OK" MinWidth="80" Style="{StaticResource AccentButtonStyle}" IsDefault="True"
+                        Click="Ok_Click" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+            </DockPanel>
+        </Border>
+
+        <TabControl x:Name="Tabs" Margin="0,4,0,0">
+            <TabItem Header="Glyphs">
+                <DockPanel Margin="14,10">
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="10,0,0,0">
+                            <TextBlock Text="Code point" VerticalAlignment="Center" Foreground="{DynamicResource SubtleForegroundBrush}" Margin="0,0,6,0" />
+                            <TextBox x:Name="CodePointBox" Width="70" FontFamily="{StaticResource MonoFont}" />
+                            <Button Content="Use" Margin="6,0,0,0" Click="UseCodePoint_Click" />
+                        </StackPanel>
+                        <TextBox x:Name="SearchBox" TextChanged="Search_TextChanged" ToolTip="Search glyphs by name" />
+                    </DockPanel>
+                    <TextBlock DockPanel.Dock="Bottom" Style="{StaticResource HintText}"
+                               Text="Segoe Fluent Icons (Windows 11) / Segoe MDL2 Assets (Windows 10). Any code point (e.g. E8A5) can be typed in." />
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="GlyphList">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Style="{StaticResource PickTile}" Click="Glyph_Click" ToolTip="{Binding Name}">
+                                        <TextBlock Text="{Binding Char}" FontFamily="{StaticResource IconFont}" FontSize="20" />
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </TabItem>
+
+            <TabItem Header="From app">
+                <StackPanel Margin="14,10">
+                    <TextBlock Style="{StaticResource LabelText}" Text="Program, shortcut, folder or any file" Margin="0,0,0,4" />
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Browse…" Margin="6,0,0,0" Click="BrowseApp_Click" />
+                        <TextBox x:Name="AppPathBox" />
+                    </DockPanel>
+                    <Button Content="Use this file's icon" HorizontalAlignment="Left" Margin="0,10,0,0" Click="UseAppIcon_Click" />
+                    <TextBlock Style="{StaticResource HintText}"
+                               Text="The icon is read from the file each time, so it follows app updates. For Launch app buttons this is filled in automatically." />
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="Image file">
+                <StackPanel Margin="14,10">
+                    <Button Content="Choose a PNG or ICO…" HorizontalAlignment="Left" Click="BrowseImage_Click" />
+                    <TextBlock Style="{StaticResource HintText}"
+                               Text="The image is copied to %APPDATA%\Island\icons, so it keeps working if the original is moved or deleted. Square images look best." />
+                    <TextBlock x:Name="ImagePathText" Style="{StaticResource HintText}" Margin="0,10,0,0" />
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="Emoji">
+                <DockPanel Margin="14,10">
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+                        <TextBlock Text="Any emoji" VerticalAlignment="Center" Foreground="{DynamicResource SubtleForegroundBrush}" Margin="0,0,8,0" />
+                        <TextBox x:Name="EmojiBox" Width="90" FontFamily="Segoe UI Emoji" FontSize="16" />
+                        <Button Content="Use" Margin="6,0,0,0" Click="UseEmoji_Click" />
+                        <TextBlock Text="Tip: Win + . opens the emoji panel" VerticalAlignment="Center" Margin="12,0,0,0"
+                                   Foreground="{DynamicResource SubtleForegroundBrush}" FontSize="11.5" />
+                    </StackPanel>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="EmojiList">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Style="{StaticResource PickTile}" Click="Emoji_Click">
+                                        <TextBlock Text="{Binding}" FontFamily="Segoe UI Emoji" FontSize="20" />
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>

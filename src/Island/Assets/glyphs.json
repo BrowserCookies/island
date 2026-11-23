@@ -1,0 +1,727 @@
+[
+{
+"code": "E700",
+"name": "GlobalNav",
+"tags": "menu hamburger"
+},
+{
+"code": "E701",
+"name": "Wifi",
+"tags": "wireless network"
+},
+{
+"code": "E702",
+"name": "Bluetooth",
+"tags": ""
+},
+{
+"code": "E703",
+"name": "Connect",
+"tags": ""
+},
+{
+"code": "E704",
+"name": "InternetSharing",
+"tags": "hotspot"
+},
+{
+"code": "E705",
+"name": "VPN",
+"tags": ""
+},
+{
+"code": "E706",
+"name": "Brightness",
+"tags": "sun"
+},
+{
+"code": "E707",
+"name": "MapPin",
+"tags": "location"
+},
+{
+"code": "E708",
+"name": "QuietHours",
+"tags": "moon night"
+},
+{
+"code": "E709",
+"name": "Airplane",
+"tags": "flight"
+},
+{
+"code": "E70A",
+"name": "Tablet",
+"tags": ""
+},
+{
+"code": "E70B",
+"name": "QuickNote",
+"tags": "note"
+},
+{
+"code": "E70C",
+"name": "RememberedDevice",
+"tags": ""
+},
+{
+"code": "E70D",
+"name": "ChevronDown",
+"tags": ""
+},
+{
+"code": "E70E",
+"name": "ChevronUp",
+"tags": ""
+},
+{
+"code": "E70F",
+"name": "Edit",
+"tags": "pencil"
+},
+{
+"code": "E710",
+"name": "Add",
+"tags": "plus new"
+},
+{
+"code": "E711",
+"name": "Cancel",
+"tags": "close x"
+},
+{
+"code": "E712",
+"name": "More",
+"tags": "ellipsis dots"
+},
+{
+"code": "E713",
+"name": "Settings",
+"tags": "gear cog"
+},
+{
+"code": "E714",
+"name": "Video",
+"tags": ""
+},
+{
+"code": "E715",
+"name": "Mail",
+"tags": "email envelope"
+},
+{
+"code": "E716",
+"name": "People",
+"tags": "users contacts"
+},
+{
+"code": "E717",
+"name": "Phone",
+"tags": "call"
+},
+{
+"code": "E718",
+"name": "Pin",
+"tags": ""
+},
+{
+"code": "E719",
+"name": "Shop",
+"tags": "store bag"
+},
+{
+"code": "E71A",
+"name": "Stop",
+"tags": ""
+},
+{
+"code": "E71B",
+"name": "Link",
+"tags": "chain url"
+},
+{
+"code": "E71C",
+"name": "Filter",
+"tags": ""
+},
+{
+"code": "E71D",
+"name": "AllApps",
+"tags": "grid"
+},
+{
+"code": "E71E",
+"name": "Zoom",
+"tags": "magnifier"
+},
+{
+"code": "E71F",
+"name": "ZoomOut",
+"tags": ""
+},
+{
+"code": "E720",
+"name": "Microphone",
+"tags": "mic"
+},
+{
+"code": "E721",
+"name": "Search",
+"tags": "find"
+},
+{
+"code": "E722",
+"name": "Camera",
+"tags": "photo screenshot"
+},
+{
+"code": "E723",
+"name": "Attach",
+"tags": "paperclip"
+},
+{
+"code": "E724",
+"name": "Send",
+"tags": ""
+},
+{
+"code": "E725",
+"name": "SendFill",
+"tags": ""
+},
+{
+"code": "E726",
+"name": "Walk",
+"tags": ""
+},
+{
+"code": "E727",
+"name": "InPrivate",
+"tags": "incognito"
+},
+{
+"code": "E728",
+"name": "FavoriteList",
+"tags": ""
+},
+{
+"code": "E72A",
+"name": "Forward",
+"tags": "arrow right"
+},
+{
+"code": "E72B",
+"name": "Back",
+"tags": "arrow left"
+},
+{
+"code": "E72C",
+"name": "Refresh",
+"tags": "reload"
+},
+{
+"code": "E72D",
+"name": "Share",
+"tags": ""
+},
+{
+"code": "E72E",
+"name": "Lock",
+"tags": ""
+},
+{
+"code": "E730",
+"name": "ReportHacked",
+"tags": ""
+},
+{
+"code": "E734",
+"name": "Star",
+"tags": "favorite"
+},
+{
+"code": "E735",
+"name": "StarFill",
+"tags": "favorite"
+},
+{
+"code": "E738",
+"name": "Remove",
+"tags": "minus"
+},
+{
+"code": "E739",
+"name": "Checkbox",
+"tags": ""
+},
+{
+"code": "E73A",
+"name": "CheckboxChecked",
+"tags": ""
+},
+{
+"code": "E73E",
+"name": "CheckMark",
+"tags": "tick done"
+},
+{
+"code": "E73F",
+"name": "BackToWindow",
+"tags": ""
+},
+{
+"code": "E740",
+"name": "FullScreen",
+"tags": "expand"
+},
+{
+"code": "E748",
+"name": "SwitchUser",
+"tags": ""
+},
+{
+"code": "E74D",
+"name": "Delete",
+"tags": "trash bin"
+},
+{
+"code": "E74E",
+"name": "Save",
+"tags": "disk"
+},
+{
+"code": "E74F",
+"name": "Mute",
+"tags": ""
+},
+{
+"code": "E750",
+"name": "Backspace",
+"tags": ""
+},
+{
+"code": "E753",
+"name": "Cloud",
+"tags": ""
+},
+{
+"code": "E756",
+"name": "CommandPrompt",
+"tags": "terminal console shell"
+},
+{
+"code": "E765",
+"name": "Keyboard",
+"tags": ""
+},
+{
+"code": "E767",
+"name": "Volume",
+"tags": "sound speaker"
+},
+{
+"code": "E768",
+"name": "Play",
+"tags": ""
+},
+{
+"code": "E769",
+"name": "Pause",
+"tags": ""
+},
+{
+"code": "E76B",
+"name": "ChevronLeft",
+"tags": ""
+},
+{
+"code": "E76C",
+"name": "ChevronRight",
+"tags": ""
+},
+{
+"code": "E770",
+"name": "System",
+"tags": "pc"
+},
+{
+"code": "E774",
+"name": "Globe",
+"tags": "web browser internet"
+},
+{
+"code": "E77B",
+"name": "Contact",
+"tags": "person user"
+},
+{
+"code": "E77F",
+"name": "Paste",
+"tags": "clipboard"
+},
+{
+"code": "E783",
+"name": "Error",
+"tags": ""
+},
+{
+"code": "E785",
+"name": "Unlock",
+"tags": ""
+},
+{
+"code": "E787",
+"name": "Calendar",
+"tags": "date"
+},
+{
+"code": "E790",
+"name": "Color",
+"tags": "palette"
+},
+{
+"code": "E7A6",
+"name": "Redo",
+"tags": ""
+},
+{
+"code": "E7A7",
+"name": "Undo",
+"tags": ""
+},
+{
+"code": "E7AC",
+"name": "OpenWith",
+"tags": "app launch"
+},
+{
+"code": "E7AD",
+"name": "Rotate",
+"tags": ""
+},
+{
+"code": "E7BA",
+"name": "Warning",
+"tags": "alert"
+},
+{
+"code": "E7BE",
+"name": "Education",
+"tags": ""
+},
+{
+"code": "E7BF",
+"name": "ShoppingCart",
+"tags": ""
+},
+{
+"code": "E7C1",
+"name": "Flag",
+"tags": ""
+},
+{
+"code": "E7C3",
+"name": "Page",
+"tags": ""
+},
+{
+"code": "E7C4",
+"name": "TaskView",
+"tags": "windows"
+},
+{
+"code": "E7E8",
+"name": "Power",
+"tags": "shutdown"
+},
+{
+"code": "E7F4",
+"name": "Monitor",
+"tags": "tv display"
+},
+{
+"code": "E7F8",
+"name": "Laptop",
+"tags": ""
+},
+{
+"code": "E7FC",
+"name": "Game",
+"tags": "controller"
+},
+{
+"code": "E80F",
+"name": "Home",
+"tags": "house"
+},
+{
+"code": "E81C",
+"name": "History",
+"tags": "clock"
+},
+{
+"code": "E81D",
+"name": "Location",
+"tags": ""
+},
+{
+"code": "E81E",
+"name": "MapLayers",
+"tags": ""
+},
+{
+"code": "E823",
+"name": "Recent",
+"tags": "clock time"
+},
+{
+"code": "E825",
+"name": "Bank",
+"tags": ""
+},
+{
+"code": "E82D",
+"name": "Dictionary",
+"tags": "book"
+},
+{
+"code": "E838",
+"name": "FolderOpen",
+"tags": ""
+},
+{
+"code": "E839",
+"name": "Ethernet",
+"tags": ""
+},
+{
+"code": "E890",
+"name": "View",
+"tags": "eye"
+},
+{
+"code": "E895",
+"name": "Sync",
+"tags": ""
+},
+{
+"code": "E896",
+"name": "Download",
+"tags": ""
+},
+{
+"code": "E897",
+"name": "Help",
+"tags": "question"
+},
+{
+"code": "E898",
+"name": "Upload",
+"tags": ""
+},
+{
+"code": "E8A3",
+"name": "ZoomIn",
+"tags": ""
+},
+{
+"code": "E8A5",
+"name": "Document",
+"tags": "file page"
+},
+{
+"code": "E8A7",
+"name": "OpenInNewWindow",
+"tags": ""
+},
+{
+"code": "E8B1",
+"name": "Shuffle",
+"tags": ""
+},
+{
+"code": "E8B3",
+"name": "SelectAll",
+"tags": ""
+},
+{
+"code": "E8B5",
+"name": "Import",
+"tags": ""
+},
+{
+"code": "E8B7",
+"name": "Folder",
+"tags": "directory"
+},
+{
+"code": "E8B9",
+"name": "Picture",
+"tags": "image"
+},
+{
+"code": "E8BB",
+"name": "ChromeClose",
+"tags": ""
+},
+{
+"code": "E8BD",
+"name": "Message",
+"tags": "chat"
+},
+{
+"code": "E8C1",
+"name": "Characters",
+"tags": ""
+},
+{
+"code": "E8C6",
+"name": "Cut",
+"tags": "scissors"
+},
+{
+"code": "E8C8",
+"name": "Copy",
+"tags": "duplicate"
+},
+{
+"code": "E8C9",
+"name": "Important",
+"tags": "exclamation"
+},
+{
+"code": "E8CB",
+"name": "Sort",
+"tags": ""
+},
+{
+"code": "E8D2",
+"name": "Font",
+"tags": "text"
+},
+{
+"code": "E8D4",
+"name": "MoveToFolder",
+"tags": ""
+},
+{
+"code": "E8D6",
+"name": "Audio",
+"tags": "music"
+},
+{
+"code": "E8D7",
+"name": "Permissions",
+"tags": "shield"
+},
+{
+"code": "E8DA",
+"name": "OpenLocal",
+"tags": ""
+},
+{
+"code": "E8E5",
+"name": "OpenFile",
+"tags": ""
+},
+{
+"code": "E8EC",
+"name": "Tag",
+"tags": "label"
+},
+{
+"code": "E8EF",
+"name": "Calculator",
+"tags": ""
+},
+{
+"code": "E8F1",
+"name": "Library",
+"tags": "books"
+},
+{
+"code": "E8F2",
+"name": "Chat",
+"tags": "bubbles"
+},
+{
+"code": "E8F4",
+"name": "NewFolder",
+"tags": ""
+},
+{
+"code": "E8FB",
+"name": "Accept",
+"tags": ""
+},
+{
+"code": "E8FD",
+"name": "BulletedList",
+"tags": "list"
+},
+{
+"code": "E909",
+"name": "World",
+"tags": "earth"
+},
+{
+"code": "E90F",
+"name": "Repair",
+"tags": "wrench tools"
+},
+{
+"code": "E91B",
+"name": "Photo",
+"tags": ""
+},
+{
+"code": "E943",
+"name": "Code",
+"tags": "script developer"
+},
+{
+"code": "E945",
+"name": "LightningBolt",
+"tags": "flash"
+},
+{
+"code": "E946",
+"name": "Info",
+"tags": "information"
+},
+{
+"code": "E95E",
+"name": "Health",
+"tags": ""
+},
+{
+"code": "E968",
+"name": "Network",
+"tags": ""
+},
+{
+"code": "E9D9",
+"name": "Diagnostic",
+"tags": ""
+},
+{
+"code": "EA86",
+"name": "Puzzle",
+"tags": "extension plugin"
+},
+{
+"code": "EB51",
+"name": "Heart",
+"tags": "love"
+},
+{
+"code": "EB52",
+"name": "HeartFill",
+"tags": ""
+},
+{
+"code": "EC92",
+"name": "DateTime",
+"tags": ""
+}
+]

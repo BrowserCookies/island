@@ -1,0 +1,47 @@
+<Window x:Class="Island.Views.IslandWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="clr-namespace:Island.Controls"
+        Title="Island" WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ShowInTaskbar="False" Topmost="True" ResizeMode="NoResize" ShowActivated="False"
+        Width="76" Height="76" Left="-32000" Top="-32000" Focusable="False">
+    <!-- The window is larger than the pill by ShadowPad on every side so the shadow isn't clipped. -->
+    <Grid x:Name="RootGrid" Background="Transparent">
+        <Grid x:Name="Pill" Margin="10" RenderTransformOrigin="0.5,0.5" Cursor="Hand"
+              MouseLeftButtonDown="Pill_MouseLeftButtonDown" MouseMove="Pill_MouseMove"
+              MouseLeftButtonUp="Pill_MouseLeftButtonUp" LostMouseCapture="Pill_LostMouseCapture"
+              MouseRightButtonUp="Pill_MouseRightButtonUp" MouseEnter="Pill_MouseEnter" MouseLeave="Pill_MouseLeave">
+            <Grid.RenderTransform>
+                <ScaleTransform x:Name="PillScale" ScaleX="1" ScaleY="1" />
+            </Grid.RenderTransform>
+            <Border x:Name="PillBorder" CornerRadius="28" Background="{DynamicResource IslandBackgroundBrush}"
+                    BorderBrush="{DynamicResource IslandBorderBrush}" BorderThickness="1">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.35" Direction="270"
+                                      Color="{DynamicResource ShadowColorBrushColor}" />
+                </Border.Effect>
+            </Border>
+
+            <!-- Collapsed: accent "island" dot -->
+            <Ellipse x:Name="Dot" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center"
+                     Fill="{DynamicResource AccentBrush}" RenderTransformOrigin="0.5,0.5">
+                <Ellipse.RenderTransform>
+                    <ScaleTransform x:Name="DotScale" ScaleX="1" ScaleY="1" />
+                </Ellipse.RenderTransform>
+            </Ellipse>
+
+            <!-- Expanded: close glyph -->
+            <TextBlock x:Name="CloseGlyph" Text="&#xE711;" FontFamily="{StaticResource IconFont}" FontSize="16"
+                       Foreground="{DynamicResource IslandForegroundBrush}" HorizontalAlignment="Center"
+                       VerticalAlignment="Center" Opacity="0" RenderTransformOrigin="0.5,0.5">
+                <TextBlock.RenderTransform>
+                    <RotateTransform x:Name="CloseRotate" Angle="-90" />
+                </TextBlock.RenderTransform>
+            </TextBlock>
+
+            <!-- Something is running (e.g. a script) -->
+            <c:Spinner x:Name="BusyRing" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                       Width="NaN" Height="NaN" Margin="3" />
+        </Grid>
+    </Grid>
+</Window>

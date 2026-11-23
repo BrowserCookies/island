@@ -1,0 +1,32 @@
+<UserControl x:Class="Island.Views.RunLogView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Shared by the "Script runs" settings tab and the stand-alone run log window. -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" MinHeight="120" />
+            <RowDefinition Height="6" />
+            <RowDefinition Height="*" MinHeight="100" />
+        </Grid.RowDefinitions>
+        <DockPanel Margin="0,0,0,8" LastChildFill="False">
+            <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" Foreground="{DynamicResource SubtleForegroundBrush}"
+                       Text="The last 50 script runs (newest first). Select a run to see its output." />
+            <Button DockPanel.Dock="Right" Content="Clear log" Click="Clear_Click" />
+            <Button DockPanel.Dock="Right" Content="Open in popup" Margin="0,0,8,0" Click="Popup_Click" />
+        </DockPanel>
+        <ListView x:Name="RunsList" Grid.Row="1" SelectionMode="Single" SelectionChanged="RunsList_SelectionChanged">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Time" Width="150" DisplayMemberBinding="{Binding Time, StringFormat='yyyy-MM-dd HH:mm:ss'}" />
+                    <GridViewColumn Header="Button" Width="180" DisplayMemberBinding="{Binding ButtonLabel}" />
+                    <GridViewColumn Header="Result" Width="110" DisplayMemberBinding="{Binding Summary}" />
+                    <GridViewColumn Header="Exit code" Width="70" DisplayMemberBinding="{Binding ExitCode}" />
+                    <GridViewColumn Header="Duration" Width="80" DisplayMemberBinding="{Binding DurationText}" />
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <GridSplitter Grid.Row="2" HorizontalAlignment="Stretch" Background="Transparent" />
+        <TextBox x:Name="DetailsText" Grid.Row="3" Style="{StaticResource CodeTextBox}" IsReadOnly="True" />
+    </Grid>
+</UserControl>

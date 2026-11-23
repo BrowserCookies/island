@@ -1,0 +1,9 @@
+<Window x:Class="Island.Views.RunLogWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:v="clr-namespace:Island.Views"
+        Title="Island — script run log" Width="860" Height="560" MinWidth="500" MinHeight="320"
+        WindowStartupLocation="CenterScreen" Background="{DynamicResource WindowBackgroundBrush}"
+        Foreground="{DynamicResource ForegroundBrush}" Icon="/Assets/island.ico">
+    <v:RunLogView x:Name="LogView" Margin="14" />
+</Window>

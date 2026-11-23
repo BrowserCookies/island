@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.17763.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <UseWPF>true</UseWPF>
+    <!-- WinForms is used only for the tray icon (NotifyIcon) and GDI screen capture. -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <!-- Lets the project build on non-Windows CI machines too (it only runs on Windows). -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <RootNamespace>Island</RootNamespace>
+    <AssemblyName>Island</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\island.ico</ApplicationIcon>
+    <Product>Island</Product>
+    <Description>A floating productivity widget for Windows.</Description>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);CA1416;WFAC010</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Island.Core\Island.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\island.ico" />
+    <Resource Include="Assets\island.png" />
+    <EmbeddedResource Include="Assets\glyphs.json" LogicalName="Island.Assets.glyphs.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="System" />
+    <Using Include="System.Collections.Generic" />
+    <Using Include="System.IO" />
+    <Using Include="System.Linq" />
+    <Using Include="System.Threading" />
+    <Using Include="System.Threading.Tasks" />
+  </ItemGroup>
+</Project>

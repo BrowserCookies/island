@@ -1,0 +1,15 @@
+<Window x:Class="Island.Views.OutputPopupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Script output" Width="720" Height="460" MinWidth="360" MinHeight="200"
+        WindowStartupLocation="CenterScreen" Background="{DynamicResource WindowBackgroundBrush}"
+        Foreground="{DynamicResource ForegroundBrush}" Icon="/Assets/island.ico">
+    <DockPanel Margin="14">
+        <DockPanel DockPanel.Dock="Bottom" Margin="0,10,0,0" LastChildFill="False">
+            <Button DockPanel.Dock="Right" Content="Close" MinWidth="80" Click="Close_Click" IsCancel="True" />
+            <Button DockPanel.Dock="Right" Content="Copy" MinWidth="80" Margin="0,0,8,0" Click="Copy_Click" />
+            <CheckBox x:Name="WrapBox" Content="Wrap lines" VerticalAlignment="Center" Margin="0" Checked="Wrap_Changed" Unchecked="Wrap_Changed" />
+        </DockPanel>
+        <TextBox x:Name="OutputText" Style="{StaticResource CodeTextBox}" IsReadOnly="True" />
+    </DockPanel>
+</Window>
