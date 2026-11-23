@@ -77,6 +77,7 @@ src/Island/                  net8.0-windows10.0.17763.0 WPF app (UseWPF + UseWin
   app.manifest               PerMonitorV2 DPI awareness, Win10 supportedOS, asInvoker
 tests/Island.Tests/          xUnit tests for Island.Core (net8.0)
 samples/scripts/             folder-stats.ps1, word_count.py, timestamp.js (JSON-protocol examples)
+installer/                   Island.iss (Inno Setup 6) + build.ps1 (publish, then compile the installer)
 README.md                    User documentation (usage, actions, script protocol, config, layout)
 ```
 
@@ -86,11 +87,33 @@ README.md                    User documentation (usage, actions, script protocol
 
 ```bash
 dotnet build Island.sln
-dotnet test tests/Island.Tests                       # 211 tests, run on any OS
+dotnet test tests/Island.Tests                       # 223 tests, run on any OS
 dotnet run --project src/Island                      # Windows only
 dotnet publish src/Island/Island.csproj -p:PublishProfile=SingleFile
 #   -> publish/win-x64/Island.exe (self-contained, compressed, ~77 MB)
+powershell -ExecutionPolicy Bypass -File installer\build.ps1 [-Version x.y.z]   # Windows only
+#   -> the exe above + publish/installer/Island-Setup-<version>.exe (~72 MB)
 ```
+
+### Releases and the installer
+
+- **Version.** The version is `<Version>` in `src/Island/Island.csproj` (1.0.0 at the first release).
+  `build.ps1` reads it and passes it to both `dotnet publish` and `ISCC /DAppVersion=`.
+- **Installer basics.** `installer/Island.iss` is a **per-user** install (`PrivilegesRequired=lowest`,
+  no UAC):
+  - installs to `{autopf}\Island`, which is `%LOCALAPPDATA%\Programs\Island`
+  - Start Menu shortcut in `{autoprograms}`, optional desktop shortcut
+  - post-install launch
+- **AppId.** Keep `AppId` fixed: it's what makes newer installers upgrade in place.
+- **Inno Setup version.** The machine this was built on has Inno Setup **6.2.2**, which rejects
+  `x64compatible` (6.3+). The script uses `x64`.
+- **Running app.** Island has no main window, so Restart Manager can't close it cleanly. The script
+  runs `taskkill /f /im Island.exe` in `PrepareToInstall` and as an `[UninstallRun]` step.
+- **Uninstall** deletes `{userstartup}\Island.lnk` (the Start-with-Windows shortcut) but keeps
+  `%APPDATA%\Island`.
+- **Not signed.** The installer isn't code-signed, so SmartScreen warns on other machines.
+- **Output.** Everything lands under `publish/`, which is git-ignored. Distribute the installer as a
+  file or a GitHub release asset; never commit it.
 
 ### Building on Linux (cloud sessions)
 

@@ -28,6 +28,21 @@ Built with .NET 8, WPF and C# (MVVM via CommunityToolkit.Mvvm). It has no web st
 
 ## Getting started
 
+### Install
+
+Run `Island-Setup-1.0.0.exe`. It installs for the current user only, so there's no admin prompt:
+
+- The app goes into `%LOCALAPPDATA%\Programs\Island`.
+- It adds an **Island** Start Menu shortcut, plus an optional desktop shortcut.
+- It adds an entry in **Settings → Apps** for uninstalling.
+
+The installer bundles the .NET runtime, so nothing else needs to be installed. It isn't code-signed,
+so Windows SmartScreen may say "Windows protected your PC". Click **More info → Run anyway**.
+
+Use **Settings → General → Start Island with Windows** to start it at sign-in. Uninstalling removes
+the app and that startup shortcut but keeps your buttons and settings in `%APPDATA%\Island`. Running
+a newer installer upgrades in place; it closes a running Island first.
+
 ### Run from source
 
 Requirements: Windows 10 (1809+) or 11 and the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
@@ -38,15 +53,25 @@ cd island
 dotnet run --project src/Island
 ```
 
-### Build a single-file `.exe`
+### Build the `.exe` and the installer
+
+```powershell
+powershell -ExecutionPolicy Bypass -File installer\build.ps1
+```
+
+This produces two files:
+
+- `publish/win-x64/Island.exe`: a self-contained single-file executable (about 75 MB) that needs no
+  .NET install. You can also copy it anywhere and run it as is.
+- `publish/installer/Island-Setup-<version>.exe`: the installer described above.
+
+The version comes from `<Version>` in `src/Island/Island.csproj`; pass `-Version 1.2.3` to override
+it. The installer step needs [Inno Setup 6](https://jrsoftware.org/isinfo.php)
+(`winget install JRSoftware.InnoSetup`). To build only the exe:
 
 ```powershell
 dotnet publish src/Island/Island.csproj -p:PublishProfile=SingleFile
 ```
-
-This produces `publish/win-x64/Island.exe`, a self-contained executable (about 75 MB) that needs no
-.NET install. Copy it anywhere and run it. There is no installer. Use **Settings → General →
-Start Island with Windows** to start it at logon.
 
 Only one Island runs at a time. Launching it again makes the existing island pulse so you can find it.
 
@@ -431,6 +456,7 @@ src/Island/             WPF app (net8.0-windows)
   Assets/               App icon, curated glyph list
 tests/Island.Tests/     xUnit tests for Island.Core
 samples/scripts/        Example scripts (PowerShell, Python, Node)
+installer/              Inno Setup script (Island.iss) and build.ps1 (publish + installer)
 ```
 
 ### Adding a new action type
