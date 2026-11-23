@@ -58,6 +58,9 @@ public partial class PanelViewModel : ObservableObject
     public ObservableCollection<PanelLevel> DisplayLevels { get; } = new();
 
     [ObservableProperty] private string? _caption;
+    /// <summary>Levels (e.g. an opened group) hug the island's side of the panel.</summary>
+    [ObservableProperty] private System.Windows.HorizontalAlignment _levelHorizontalAlignment = System.Windows.HorizontalAlignment.Right;
+    [ObservableProperty] private System.Windows.VerticalAlignment _levelVerticalAlignment = System.Windows.VerticalAlignment.Bottom;
     [ObservableProperty] private ExpandLayout _layout;
     [ObservableProperty] private int _gridColumns = 4;
 
@@ -134,6 +137,8 @@ public partial class PanelViewModel : ObservableObject
 
     private void RebuildDisplay()
     {
+        LevelHorizontalAlignment = _corner.IsRight() ? System.Windows.HorizontalAlignment.Right : System.Windows.HorizontalAlignment.Left;
+        LevelVerticalAlignment = _corner.IsBottom() ? System.Windows.VerticalAlignment.Bottom : System.Windows.VerticalAlignment.Top;
         DisplayLevels.Clear();
         // Levels stack away from the island: for bottom corners (row/grid) the top level is
         // at the bottom; for right corners (column) it is at the right.

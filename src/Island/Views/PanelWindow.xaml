@@ -102,7 +102,9 @@
         </Style>
 
         <DataTemplate DataType="{x:Type vm:PanelLevel}">
-            <Border Padding="3" Margin="2" CornerRadius="10" x:Name="LevelBorder">
+            <Border Padding="3" Margin="2" CornerRadius="10" x:Name="LevelBorder"
+                    HorizontalAlignment="{Binding DataContext.LevelHorizontalAlignment, RelativeSource={RelativeSource AncestorType=Window}}"
+                    VerticalAlignment="{Binding DataContext.LevelVerticalAlignment, RelativeSource={RelativeSource AncestorType=Window}}">
                 <ItemsControl ItemsSource="{Binding Tiles}" Style="{StaticResource TilesHost}" />
             </Border>
             <DataTemplate.Triggers>
